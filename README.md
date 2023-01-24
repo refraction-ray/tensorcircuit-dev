@@ -151,7 +151,7 @@ We welcome [issues](https://github.com/tencent-quantum-lab/tensorcircuit/issues)
       <td align="center" valign="top" width="16.66%"><a href="https://github.com/Zhouquan-Wan"><img src="https://avatars.githubusercontent.com/u/54523490?v=4?s=100" width="100px;" alt="Zhouquan-Wan"/><br /><sub><b>Zhouquan-Wan</b></sub></a><br /><a href="https://github.com/refraction-ray/tensorcircuit-dev/commits?author=Zhouquan-Wan" title="Code">💻</a> <a href="https://github.com/refraction-ray/tensorcircuit-dev/commits?author=Zhouquan-Wan" title="Documentation">📖</a> <a href="#example-Zhouquan-Wan" title="Examples">💡</a> <a href="#ideas-Zhouquan-Wan" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/refraction-ray/tensorcircuit-dev/commits?author=Zhouquan-Wan" title="Tests">⚠️</a> <a href="#tutorial-Zhouquan-Wan" title="Tutorials">✅</a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/ls-iastu"><img src="https://avatars.githubusercontent.com/u/70554346?v=4?s=100" width="100px;" alt="ls-iastu"/><br /><sub><b>ls-iastu</b></sub></a><br /><a href="#example-ls-iastu" title="Examples">💡</a> <a href="#tutorial-ls-iastu" title="Tutorials">✅</a></td>
+      <td align="center" valign="top" width="16.66%"><a href="https://github.com/ls-iastu"><img src="https://avatars.githubusercontent.com/u/70554346?v=4?s=100" width="100px;" alt="ls-iastu"/><br /><sub><b>ls-iastu</b></sub></a><br /><a href="#example-ls-iastu" title="Examples">💡</a> <a href="#tutorial-ls-iastu" title="Tutorials">✅</a> <a href="#research-ls-iastu" title="Research">🔬</a></td>
     </tr>
   </tbody>
 </table>
