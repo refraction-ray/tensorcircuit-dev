@@ -1,0 +1,30 @@
+title: "Towards Practical Quantum Neural Network Diagnostics with Neural Tangent Kernels"
+arxiv_id: "2503.01966"
+url: "https://arxiv.org/abs/2503.01966"
+year: 2025
+authors:
+  - "Francesco Scala"
+  - "Christa Zoufal"
+  - "Dario Gerace"
+  - "Francesco Tacchino"
+tags:
+  - "quantum-machine-learning"
+  - "variational-algorithm"
+  - "many-body-physics"
+tc_features:
+  - "circuit"
+  - "expectation"
+  - "jit"
+  - "vmap"
+  - "autodiff"
+backend: "pytorch"
+hardware_requirements:
+  gpu: false
+  min_memory: "4GB"
+card_title: "Figure 2 · QNTK diagnostics"
+summary: "QNTK spectra distinguish trainable low-frequency circuits from expressive high-frequency circuits that overfit TFIM data."
+description: "Reproduces the visible part of all four Figure 2 panels for the paper's 6-qubit TFIM regression task, four QNN architectures, depths 5 through 30, and three fixed random initializations. The scope is limited to the portion visible on the paper's approximately 620-parameter axis. The VQE targets are digitized from the manuscript's vector dataset figure because the underlying table is not published. The model output is the representative first-qubit transverse-X expectation required by the TFIM target. The paper also omits an explicit feature-to-rotation-angle conversion; this reproduction uses pi times the scaled feature as an explicit reconstruction choice. The script supports comparable JAX and PyTorch runs through TensorCircuit-NG backend transforms."
+outputs:
+  - target: "Figure 2: QNTK spectrum, conditioning, and generalization diagnostics"
+    path: "outputs/result.png"
+    script: "main.py"
