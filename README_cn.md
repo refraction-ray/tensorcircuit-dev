@@ -29,7 +29,7 @@
 
 <p align="center"> <a href="README.md">English</a> |  简体中文 </p>
 
-TensorCircuit-NG 是[下一代开源高性能量子软件框架](https://tensorcircuit-ng.readthedocs.io/en/latest/platform/index.html)，也是面向智能体量子科研的[AI 原生科研运行时](https://tensorcircuit-ng.readthedocs.io/en/latest/agent_landing/index.html)，帮助研究人员将科研问题转化为可执行、可优化、可验证的量子实验。
+TensorCircuit-NG 是[下一代开源高性能量子软件框架](https://tensorcircuit-ng.readthedocs.io/en/latest/platform/index.html)，也是面向智能体量子科研的[AI 原生运行时](https://tensorcircuit-ng.readthedocs.io/en/latest/agent_landing/index.html)。
 
 TensorCircuit-NG 基于张量网络引擎构建，完美支持自动微分、即时编译、硬件加速、向量并行化和分布式训练，为量子编程提供统一的基础设施和接口。它可以无缝编织量子线路、神经网络和张量网络，具备极高的模拟效率和灵活性。
 

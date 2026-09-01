@@ -394,13 +394,11 @@ TensorCircuit-NG is open source, released under the Apache License, Version 2.0.
 
 The [Executable Research Hub](https://tensorcircuit-ng.readthedocs.io/en/latest/reproduce/index.html) is the literature-to-artifact layer of TensorCircuit-NG's agentic research stack. Each paper is packaged as a runnable, metadata-rich, and inspectable research artifact with its implementation, target figure, backend, scaling strategy, and validation context.
 
-**[Browse the Hub](https://tensorcircuit-ng.readthedocs.io/en/latest/reproduce/index.html)** or read the source in [examples/reproduce_papers](/examples/reproduce_papers). For the broader agentic research workflow, see the [Agentic Quantum Research guide](https://tensorcircuit-ng.readthedocs.io/en/latest/agentic.html).
-
-Adding one is the most approachable way to make a first contribution: pick a paper, follow the conventions in [examples/reproduce_papers](/examples/reproduce_papers), and open a pull request.
+Adding one paper is the most approachable way to make a first contribution: pick a paper, follow the conventions in [examples/reproduce_papers](/examples/reproduce_papers), and open a pull request.
 
 ## Research and Applications
 
-TensorCircuit-NG is a powerful framework for driving research and applications in quantum computing. Below are examples of published academic works (150+ in total) and open-source projects that utilize TensorCircuit and TensorCircuit-NG.
+TensorCircuit-NG is a powerful framework for driving research and applications in quantum computing. Below are examples of published academic works (190+ in total) and open-source projects that utilize TensorCircuit and TensorCircuit-NG.
 
 ### DQAS
 
