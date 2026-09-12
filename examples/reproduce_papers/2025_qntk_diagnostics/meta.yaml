@@ -16,6 +16,7 @@ tc_features:
   - "expectation"
   - "jit"
   - "vmap"
+  - "scan"
   - "autodiff"
 backend: "pytorch"
 hardware_requirements:
@@ -23,7 +24,7 @@ hardware_requirements:
   min_memory: "4GB"
 card_title: "Figure 2 · QNTK diagnostics"
 summary: "QNTK spectra distinguish trainable low-frequency circuits from expressive high-frequency circuits that overfit TFIM data."
-description: "Reproduces the visible part of all four Figure 2 panels for the paper's 6-qubit TFIM regression task, four QNN architectures, depths 5 through 30, and three fixed random initializations. The scope is limited to the portion visible on the paper's approximately 620-parameter axis. The VQE targets are digitized from the manuscript's vector dataset figure because the underlying table is not published. The model output is the representative first-qubit transverse-X expectation required by the TFIM target. The paper also omits an explicit feature-to-rotation-angle conversion; this reproduction uses pi times the scaled feature as an explicit reconstruction choice. The script supports comparable JAX and PyTorch runs through TensorCircuit-NG backend transforms."
+description: "Reproduces the visible part of all four Figure 2 panels for the paper's 6-qubit TFIM regression task, four QNN architectures, paper-range parameter counts, and ten fixed random initializations. HVA uses depths 5 through 50 and HEA uses depths 5 through 30 to cover the plotted range through 600 parameters. The VQE targets are digitized from the manuscript's vector dataset figure because the underlying table is not published. The model output is the representative first-qubit transverse-X expectation required by the TFIM target. The paper also omits an explicit feature-to-rotation-angle conversion; this reproduction uses pi times the scaled feature as an explicit reconstruction choice. The script uses TensorCircuit-NG scan, JIT, vectorization, and autodiff transforms for both JAX and PyTorch backends."
 outputs:
   - target: "Figure 2: QNTK spectrum, conditioning, and generalization diagnostics"
     path: "outputs/result.png"

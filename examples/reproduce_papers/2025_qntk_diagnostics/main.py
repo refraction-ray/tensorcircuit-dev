@@ -21,10 +21,15 @@ import tensorcircuit as tc
 plt.switch_backend("Agg")
 
 NQUBITS = 6
-# The paper extends beyond the visible 620-parameter axis; this gallery artifact
-# keeps the six depth points that fit within that plotted range.
-DEPTHS = np.arange(5, 31, 5, dtype=np.int64)
-SEEDS = range(3)
+# Match the paper's visible parameter range for each ansatz.
+# HVA reaches 600 parameters at depth 50; HEA reaches 540 at depth 30.
+DEPTHS = {
+    "low_hva": np.arange(5, 51, 5, dtype=np.int64),
+    "high_hva": np.arange(5, 51, 5, dtype=np.int64),
+    "low_hea": np.arange(5, 31, 5, dtype=np.int64),
+    "high_hea": np.arange(5, 31, 5, dtype=np.int64),
+}
+SEEDS = range(10)
 BACKENDS = ("jax", "pytorch")
 DTYPE = "complex128"
 ENCODING_SCALE = np.pi
@@ -111,7 +116,7 @@ def apply_encoding(
     circuit: tc.Circuit,
     x_value: Any,
     depth: int,
-    layer: int,
+    layer: Any,
     frequency: str,
 ) -> None:
     """Apply the low- or high-frequency data embedding."""
@@ -167,29 +172,24 @@ def qnn_output(
     frequency, ansatz = architecture.split("_")
     ansatz_width = 2 if ansatz == "hva" else 3
     shaped_parameters = tc.backend.reshape(parameters, [depth, ansatz_width, NQUBITS])
-    circuit = tc.Circuit(NQUBITS)
-    for layer in range(depth):
+    layer_indices = tc.backend.arange(depth)
+    initial_state = tc.Circuit(NQUBITS).state()
+
+    def scan_step(state: Any, scan_inputs: Any) -> Any:
+        layer_parameters, layer = scan_inputs
+        circuit = tc.Circuit(NQUBITS, inputs=state)
         apply_encoding(circuit, x_value, depth, layer, frequency)
         if ansatz == "hva":
-            apply_hva(circuit, shaped_parameters[layer])
+            apply_hva(circuit, layer_parameters)
         else:
-            apply_hea(circuit, shaped_parameters[layer])
+            apply_hea(circuit, layer_parameters)
+        return circuit.state()
+
+    final_state = tc.backend.scan(
+        scan_step, (shaped_parameters, layer_indices), initial_state
+    )
+    circuit = tc.Circuit(NQUBITS, inputs=final_state)
     return tc.backend.real(circuit.expectation_ps(x=[0]))
-
-
-def batch_outputs(
-    parameters: Any,
-    inputs: Any,
-    depth: int,
-    architecture: str,
-) -> Any:
-    """Evaluate a shared-parameter QNN on all scalar inputs."""
-
-    def scalar_output(parameter_values: Any, x_value: Any) -> Any:
-        return qnn_output(parameter_values, x_value, depth, architecture)
-
-    mapped_output = tc.backend.vmap(scalar_output, vectorized_argnums=1)
-    return tc.backend.jit(mapped_output)(parameters, inputs)
 
 
 @contextlib.contextmanager
@@ -200,27 +200,18 @@ def runtime_context(backend: str) -> Iterator[Any]:
         yield active_backend
 
 
-def build_transforms(
+def build_jacobian_transform(
     active_backend: Any, depth: int, architecture: str
-) -> tuple[Callable[[Any, Any], Any], Callable[[Any, Any], Any]]:
-    """Build JIT/vectorized output and Jacobian transforms for one circuit shape."""
+) -> Callable[[Any, Any], Any]:
+    """Build a JIT/vectorized Jacobian transform for one circuit shape."""
 
     def scalar_output(parameters: Any, x_value: Any) -> Any:
         return qnn_output(parameters, x_value, depth, architecture)
 
-    output_function = active_backend.jit(
-        active_backend.vmap(scalar_output, vectorized_argnums=1)
-    )
-    if active_backend.name == "pytorch":
-        # TCNG 1.9.1's generic jacrev is incompatible with this PyTorch functorch path.
-        # For this scalar output, grad returns the same parameter Jacobian.
-        scalar_jacobian = active_backend.grad(scalar_output, argnums=0)
-    else:
-        scalar_jacobian = active_backend.jacrev(scalar_output, argnums=0)
-    jacobian_function = active_backend.jit(
+    scalar_jacobian = active_backend.grad(scalar_output, argnums=0)
+    return active_backend.jit(
         active_backend.vmap(scalar_jacobian, vectorized_argnums=1)
     )
-    return output_function, jacobian_function
 
 
 def r2_score(targets: np.ndarray, predictions: np.ndarray) -> float:
@@ -257,26 +248,25 @@ def kernel_diagnostics(jacobian: np.ndarray) -> dict[str, float]:
 
 
 def run_sweep(backend: str) -> dict[str, dict[str, np.ndarray]]:
-    """Run all four architectures, six depths, and three initializations."""
+    """Run all architectures, their paper-range depths, and ten initializations."""
 
     results: dict[str, dict[str, np.ndarray]] = {}
     with runtime_context(backend) as active_backend:
         input_tensor = active_backend.convert_to_tensor(SCALED_INPUTS, dtype="float64")
-        transforms: dict[
-            tuple[str, int], tuple[Callable[[Any, Any], Any], Callable[[Any, Any], Any]]
-        ] = {}
+        transforms: dict[tuple[str, int], Callable[[Any, Any], Any]] = {}
         for architecture in ARCHITECTURES:
+            depths = DEPTHS[architecture]
             architecture_metrics = {
-                metric: np.empty((len(SEEDS), DEPTHS.size), dtype=np.float64)
+                metric: np.empty((len(SEEDS), depths.size), dtype=np.float64)
                 for metric in METRICS
             }
-            for depth_index, depth_value in enumerate(DEPTHS):
+            for depth_index, depth_value in enumerate(depths):
                 depth = int(depth_value)
                 transform_key = architecture, depth
-                transforms[transform_key] = build_transforms(
+                transforms[transform_key] = build_jacobian_transform(
                     active_backend, depth, architecture
                 )
-                output_function, jacobian_function = transforms[transform_key]
+                jacobian_function = transforms[transform_key]
                 count = parameter_count(architecture, depth)
                 for seed in SEEDS:
                     start = time.perf_counter()
@@ -284,19 +274,17 @@ def run_sweep(backend: str) -> dict[str, dict[str, np.ndarray]]:
                     parameter_tensor = active_backend.convert_to_tensor(
                         parameters, dtype="float64"
                     )
-                    outputs = output_function(parameter_tensor, input_tensor)
                     jacobian = jacobian_function(parameter_tensor, input_tensor)
-                    output_values = np.asarray(
-                        active_backend.numpy(outputs), dtype=np.float64
+                    jacobian_values = np.asarray(
+                        active_backend.numpy(jacobian), dtype=np.float64
                     )
-                    if output_values.shape != SCALED_INPUTS.shape:
+                    expected_shape = SCALED_INPUTS.shape + (count,)
+                    if jacobian_values.shape != expected_shape:
                         raise ValueError(
-                            f"Unexpected output shape {output_values.shape}; "
-                            f"expected {SCALED_INPUTS.shape}."
+                            f"Unexpected Jacobian shape {jacobian_values.shape}; "
+                            f"expected {expected_shape}."
                         )
-                    diagnostics = kernel_diagnostics(
-                        np.asarray(active_backend.numpy(jacobian), dtype=np.float64)
-                    )
+                    diagnostics = kernel_diagnostics(jacobian_values)
                     for metric in METRICS:
                         architecture_metrics[metric][seed, depth_index] = diagnostics[
                             metric
@@ -373,8 +361,9 @@ def plot_results(results: dict[str, dict[str, np.ndarray]]) -> None:
     )
     for architecture in ARCHITECTURES:
         style = STYLES[architecture]
+        depths = DEPTHS[architecture]
         x_values = np.asarray(
-            [parameter_count(architecture, int(depth)) for depth in DEPTHS]
+            [parameter_count(architecture, int(depth)) for depth in depths]
         )
         for axes, metric in zip(metric_axes, METRICS):
             mean = np.mean(results[architecture][metric], axis=0)
