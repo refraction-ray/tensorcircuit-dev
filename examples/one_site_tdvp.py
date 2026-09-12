@@ -80,9 +80,13 @@ def lanczos_expm(apply_fn, v0, dt, subspace_dim=10):
         off_diag = tc.backend.diagflat(betas[:-1], k=1)
         T = T + off_diag + tc.backend.adjoint(off_diag)
 
-    expT = tc.backend.expm(T * dt)
-    e1 = tc.backend.zeros((subspace_dim,), dtype=v0_flat.dtype).at[0].set(1.0)
-    v_new_proj = tc.backend.matvec(expT, e1)
+    # T is Hermitian; only the first column of its exponential is needed.
+    eigenvalues, eigenvectors = tc.backend.eigh(T)
+    v_new_proj = tc.backend.matvec(
+        eigenvectors,
+        tc.backend.exp(dt * tc.backend.cast(eigenvalues, v0_flat.dtype))
+        * tc.backend.conj(eigenvectors[0, :]),
+    )
     v_new_flat = tc.backend.matvec(basis_mat, v_new_proj)
 
     return tc.backend.reshape(v_new_flat * tc.backend.cast(norm, v0_flat.dtype), shape)

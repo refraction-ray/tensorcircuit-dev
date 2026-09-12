@@ -19,6 +19,7 @@ Use this file for model-specific performance patterns that are broader than one 
 
 - In fixed-bond-dimension masked MPS/DMRG workflows, the mask constrains the local optimization variable, not the stored canonical tensor itself. After QR or other canonicalization steps, boundary tensors can become dense again as part of gauge completion.
 - Do not remask canonical tensors after QR just to preserve visual sparsity. That generally breaks canonicality; if exact structural zeros are required, use explicit boundary bond dimensions or a canonicalization scheme defined on the active subspace.
+- For one-site TDVP, distinguish fixed tensor bond shapes from actual Schmidt rank: QR completion can allow a zero-padded state to populate already allocated directions without noise, but the chosen subspace is not guaranteed to capture the Hamiltonian's entangling action. A strictly bond-one Neel MPS freezes under an XX+YY Hamiltonian even while norm and energy are exactly conserved. Judge initialization with exact-state fidelity or bond-dimension convergence, and count TEBD warmup in physical time. Different variational subspaces do not by themselves explain energy drift for time-independent Hermitian evolution.
 
 ## Pauli and Heisenberg evolution
 
