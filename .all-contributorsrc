@@ -437,6 +437,15 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "ninjaduck7",
+      "name": "Yufei Zhang",
+      "avatar_url": "https://avatars.githubusercontent.com/u/186756149?v=4",
+      "profile": "https://github.com/ninjaduck7",
+      "contributions": [
+        "example"
+      ]
     }
   ],
   "contributorsPerLine": 6,
