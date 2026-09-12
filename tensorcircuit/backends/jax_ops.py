@@ -17,7 +17,18 @@ Array = Any  # jnp.array
 
 @jax.custom_vjp
 def adaware_svd(A: Array) -> Any:
-    u, s, v = jnp.linalg.svd(A, full_matrices=False)
+    # SvdAlgorithm was added in JAX 0.4.35, whose CPU lowering rejects
+    # explicit algorithms; use QR only on a GPU that exposes the enum.
+    svd_algorithm = getattr(jax.lax.linalg, "SvdAlgorithm", None)
+    qr_algorithm = getattr(svd_algorithm, "QR", None)
+    if jax.default_backend() == "gpu" and qr_algorithm is not None:
+        u, s, v = jax.lax.linalg.svd(
+            A,
+            full_matrices=False,
+            algorithm=qr_algorithm,
+        )
+    else:
+        u, s, v = jnp.linalg.svd(A, full_matrices=False)
     return (u, s, v)
 
 

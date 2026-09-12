@@ -11,9 +11,6 @@ import jax.numpy as jnp
 import quimb.tensor as qtn
 import tensorcircuit as tc
 
-tc.set_backend("jax")
-tc.set_dtype("complex128")
-
 
 def apply_heff(L, W, R, M):
     T1 = tc.backend.einsum("abc,cde->abde", L, M)
@@ -403,6 +400,8 @@ def mps_to_state(M_list):
 
 
 if __name__ == "__main__":
+    tc.set_backend("jax")
+    tc.set_dtype("complex128")
     L = 12
     chi = 16
     dt = 0.005
